@@ -2,20 +2,21 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    // MARK: - Background
+
     private let gradientLayer = CAGradientLayer()
+    private var timer: Timer?
+
+    // MARK: - Header
 
     private let iconImageView: UIImageView = {
         let iv = UIImageView()
         iv.image = UIImage(named: "Logo")
         iv.contentMode = .scaleAspectFill
-        iv.layer.cornerRadius = 24
+        iv.layer.cornerRadius = 22
         iv.layer.masksToBounds = true
         iv.layer.borderWidth = 1
         iv.layer.borderColor = UIColor.white.withAlphaComponent(0.25).cgColor
-        iv.layer.shadowColor = UIColor.black.cgColor
-        iv.layer.shadowOpacity = 0.35
-        iv.layer.shadowRadius = 16
-        iv.layer.shadowOffset = CGSize(width: 0, height: 8)
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
@@ -23,7 +24,7 @@ class ViewController: UIViewController {
     private let titleLabel: UILabel = {
         let l = UILabel()
         l.text = "BlankApp"
-        l.font = UIFont.systemFont(ofSize: 34, weight: .bold)
+        l.font = UIFont.systemFont(ofSize: 28, weight: .bold)
         l.textColor = .white
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
@@ -33,27 +34,164 @@ class ViewController: UIViewController {
     private let subtitleLabel: UILabel = {
         let l = UILabel()
         l.text = "Built on GitHub Actions"
-        l.font = UIFont.systemFont(ofSize: 17, weight: .medium)
+        l.font = UIFont.systemFont(ofSize: 13, weight: .medium)
+        l.textColor = UIColor.white.withAlphaComponent(0.75)
+        l.textAlignment = .center
+        l.translatesAutoresizingMaskIntoConstraints = false
+        return l
+    }()
+
+    // MARK: - Clock (Feature 2)
+
+    private let timeLabel: UILabel = {
+        let l = UILabel()
+        l.font = UIFont.monospacedDigitSystemFont(ofSize: 56, weight: .bold)
+        l.textColor = .white
+        l.textAlignment = .center
+        l.translatesAutoresizingMaskIntoConstraints = false
+        return l
+    }()
+
+    private let dateLabel: UILabel = {
+        let l = UILabel()
+        l.font = UIFont.systemFont(ofSize: 15, weight: .medium)
         l.textColor = UIColor.white.withAlphaComponent(0.85)
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
 
-    private let versionLabel: UILabel = {
+    private let greetingLabel: UILabel = {
         let l = UILabel()
-        l.font = UIFont.monospacedDigitSystemFont(ofSize: 13, weight: .regular)
-        l.textColor = UIColor.white.withAlphaComponent(0.6)
+        l.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        l.textColor = .white
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
 
+    // MARK: - Device info card (Feature 1)
+
+    private let deviceStack: UIStackView = {
+        let s = UIStackView()
+        s.axis = .vertical
+        s.spacing = 10
+        s.translatesAutoresizingMaskIntoConstraints = false
+        return s
+    }()
+
+    private let deviceCardView: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor.white.withAlphaComponent(0.12)
+        v.layer.cornerRadius = 16
+        v.layer.borderWidth = 1
+        v.layer.borderColor = UIColor.white.withAlphaComponent(0.15).cgColor
+        v.translatesAutoresizingMaskIntoConstraints = false
+        return v
+    }()
+
+    private let deviceTitleLabel: UILabel = {
+        let l = UILabel()
+        l.text = "设备信息"
+        l.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        l.textColor = UIColor.white.withAlphaComponent(0.7)
+        l.translatesAutoresizingMaskIntoConstraints = false
+        return l
+    }()
+
+    // MARK: - Counter (Feature 3)
+
+    private let counterLabel: UILabel = {
+        let l = UILabel()
+        l.font = UIFont.monospacedDigitSystemFont(ofSize: 48, weight: .bold)
+        l.textColor = .white
+        l.textAlignment = .center
+        l.translatesAutoresizingMaskIntoConstraints = false
+        return l
+    }()
+
+    private let counterHintLabel: UILabel = {
+        let l = UILabel()
+        l.text = "点击按钮 +1,有触感反馈"
+        l.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        l.textColor = UIColor.white.withAlphaComponent(0.7)
+        l.textAlignment = .center
+        l.translatesAutoresizingMaskIntoConstraints = false
+        return l
+    }()
+
+    private lazy var tapButton: UIButton = {
+        var config = UIButton.Configuration.filled()
+        config.title = "+1"
+        config.baseBackgroundColor = UIColor.white.withAlphaComponent(0.95)
+        config.baseForegroundColor = UIColor(red: 0.20, green: 0.13, blue: 0.45, alpha: 1.0)
+        config.cornerStyle = .capsule
+        config.buttonSize = .large
+        let b = UIButton(configuration: config)
+        b.translatesAutoresizingMaskIntoConstraints = false
+        b.addTarget(self, action: #selector(handleTap), for: .touchUpInside)
+        return b
+    }()
+
+    private let feedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
+    private var count: Int = 0
+
+    // MARK: - Layout containers
+
+    private let scrollView: UIScrollView = {
+        let s = UIScrollView()
+        s.showsVerticalScrollIndicator = true
+        s.alwaysBounceVertical = true
+        s.translatesAutoresizingMaskIntoConstraints = false
+        return s
+    }()
+
+    private let contentStack: UIStackView = {
+        let s = UIStackView()
+        s.axis = .vertical
+        s.alignment = .fill
+        s.spacing = 24
+        s.translatesAutoresizingMaskIntoConstraints = false
+        return s
+    }()
+
+    private let versionLabel: UILabel = {
+        let l = UILabel()
+        l.font = UIFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        l.textColor = UIColor.white.withAlphaComponent(0.5)
+        l.textAlignment = .center
+        l.translatesAutoresizingMaskIntoConstraints = false
+        return l
+    }()
+
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackground()
-        setupContent()
+        setupLayout()
+        updateClock()
+        populateDeviceInfo()
+        loadCount()
         updateVersionLabel()
+
+        UIDevice.current.batteryMonitoringEnabled = true
+
+        feedbackGenerator.prepare()
+
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.updateClock()
+        }
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        updateClock()
+        populateDeviceInfo()
+    }
+
+    deinit {
+        timer?.invalidate()
     }
 
     override func viewDidLayoutSubviews() {
@@ -61,40 +199,255 @@ class ViewController: UIViewController {
         gradientLayer.frame = view.bounds
     }
 
+    // MARK: - Setup
+
     private func setupBackground() {
-        gradientLayer.colors = [
-            UIColor(red: 0.10, green: 0.16, blue: 0.45, alpha: 1.0).cgColor,
-            UIColor(red: 0.30, green: 0.10, blue: 0.55, alpha: 1.0).cgColor
-        ]
-        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
-        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
         view.layer.addSublayer(gradientLayer)
+        applyGradientForCurrentHour()
     }
 
-    private func setupContent() {
-        view.addSubview(iconImageView)
-        view.addSubview(titleLabel)
-        view.addSubview(subtitleLabel)
-        view.addSubview(versionLabel)
+    private func setupLayout() {
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentStack)
 
+        let headerStack = UIStackView(arrangedSubviews: [iconImageView, titleLabel, subtitleLabel])
+        headerStack.axis = .vertical
+        headerStack.alignment = .center
+        headerStack.spacing = 8
+        headerStack.isLayoutMarginsRelativeArrangement = true
+        headerStack.layoutMargins = UIEdgeInsets(top: 16, left: 0, bottom: 0, right: 0)
+        headerStack.translatesAutoresizingMaskIntoConstraints = false
+
+        let clockCard = makeCard(content: {
+            let s = UIStackView(arrangedSubviews: [timeLabel, dateLabel, greetingLabel])
+            s.axis = .vertical
+            s.alignment = .center
+            s.spacing = 6
+            s.translatesAutoresizingMaskIntoConstraints = false
+            return s
+        }())
+
+        deviceCardView.addSubview(deviceTitleLabel)
+        deviceCardView.addSubview(deviceStack)
         NSLayoutConstraint.activate([
-            iconImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            iconImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 64),
-            iconImageView.widthAnchor.constraint(equalToConstant: 120),
-            iconImageView.heightAnchor.constraint(equalToConstant: 120),
+            deviceTitleLabel.topAnchor.constraint(equalTo: deviceCardView.topAnchor, constant: 14),
+            deviceTitleLabel.leadingAnchor.constraint(equalTo: deviceCardView.leadingAnchor, constant: 16),
+            deviceTitleLabel.trailingAnchor.constraint(equalTo: deviceCardView.trailingAnchor, constant: -16),
+            deviceStack.topAnchor.constraint(equalTo: deviceTitleLabel.bottomAnchor, constant: 12),
+            deviceStack.leadingAnchor.constraint(equalTo: deviceCardView.leadingAnchor, constant: 16),
+            deviceStack.trailingAnchor.constraint(equalTo: deviceCardView.trailingAnchor, constant: -16),
+            deviceStack.bottomAnchor.constraint(equalTo: deviceCardView.bottomAnchor, constant: -14)
+        ])
 
-            titleLabel.topAnchor.constraint(equalTo: iconImageView.bottomAnchor, constant: 32),
-            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+        let counterCard = makeCard(content: {
+            let s = UIStackView(arrangedSubviews: [counterLabel, counterHintLabel, tapButton])
+            s.axis = .vertical
+            s.alignment = .center
+            s.spacing = 10
+            s.translatesAutoresizingMaskIntoConstraints = false
+            return s
+        }())
+        // 让按钮横向铺满
+        tapButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
 
-            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
-            subtitleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-            subtitleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
+        contentStack.addArrangedSubview(headerStack)
+        contentStack.addArrangedSubview(clockCard)
+        contentStack.addArrangedSubview(deviceCardView)
+        contentStack.addArrangedSubview(counterCard)
+        contentStack.addArrangedSubview(versionLabel)
 
-            versionLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -24),
-            versionLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        let margins = UIEdgeInsets(top: 24, left: 20, bottom: 24, right: 20)
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+
+            contentStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: margins.top),
+            contentStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: margins.left),
+            contentStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -margins.right),
+            contentStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -margins.bottom),
+            contentStack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -(margins.left + margins.right)),
+
+            iconImageView.widthAnchor.constraint(equalToConstant: 88),
+            iconImageView.heightAnchor.constraint(equalToConstant: 88)
         ])
     }
+
+    private func makeCard(content: () -> UIView) -> UIView {
+        let card = UIView()
+        card.backgroundColor = UIColor.white.withAlphaComponent(0.12)
+        card.layer.cornerRadius = 16
+        card.layer.borderWidth = 1
+        card.layer.borderColor = UIColor.white.withAlphaComponent(0.15).cgColor
+        card.translatesAutoresizingMaskIntoConstraints = false
+        let inner = content()
+        card.addSubview(inner)
+        NSLayoutConstraint.activate([
+            inner.topAnchor.constraint(equalTo: card.topAnchor, constant: 16),
+            inner.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
+            inner.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
+            inner.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -16)
+        ])
+        return card
+    }
+
+    // MARK: - Feature 2: Clock
+
+    private func updateClock() {
+        let now = Date()
+        let timeFmt = DateFormatter()
+        timeFmt.dateFormat = "HH:mm:ss"
+        timeLabel.text = timeFmt.string(from: now)
+
+        let dateFmt = DateFormatter()
+        dateFmt.locale = Locale(identifier: "zh_CN")
+        dateFmt.dateFormat = "M月d日 EEEE"
+        dateLabel.text = dateFmt.string(from: now)
+
+        let hour = Calendar.current.component(.hour, from: now)
+        greetingLabel.text = greeting(for: hour)
+
+        applyGradientForCurrentHour()
+    }
+
+    private func greeting(for hour: Int) -> String {
+        switch hour {
+        case 5..<11:  return "☀ 早上好"
+        case 11..<13: return "🌤 中午好"
+        case 13..<18: return "🌤 下午好"
+        case 18..<23: return "🌙 晚上好"
+        default:      return "🌌 夜深了"
+        }
+    }
+
+    private func applyGradientForCurrentHour() {
+        let hour = Calendar.current.component(.hour, from: Date())
+        let (c1, c2): (UIColor, UIColor)
+        switch hour {
+        case 5..<11:  // 早晨 - 蓝紫
+            c1 = UIColor(red: 0.18, green: 0.34, blue: 0.62, alpha: 1.0)
+            c2 = UIColor(red: 0.32, green: 0.18, blue: 0.55, alpha: 1.0)
+        case 11..<17: // 中午 - 蓝绿
+            c1 = UIColor(red: 0.13, green: 0.30, blue: 0.55, alpha: 1.0)
+            c2 = UIColor(red: 0.15, green: 0.40, blue: 0.55, alpha: 1.0)
+        case 17..<20: // 黄昏 - 橙紫
+            c1 = UIColor(red: 0.42, green: 0.18, blue: 0.42, alpha: 1.0)
+            c2 = UIColor(red: 0.55, green: 0.25, blue: 0.30, alpha: 1.0)
+        default:      // 夜晚 - 深紫
+            c1 = UIColor(red: 0.08, green: 0.08, blue: 0.22, alpha: 1.0)
+            c2 = UIColor(red: 0.20, green: 0.10, blue: 0.40, alpha: 1.0)
+        }
+        gradientLayer.colors = [c1.cgColor, c2.cgColor]
+        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
+        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
+    }
+
+    // MARK: - Feature 1: Device info
+
+    private func populateDeviceInfo() {
+        deviceStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+
+        let model = UIDevice.current.model
+        let systemVersion = UIDevice.current.systemVersion
+        let screen = UIScreen.main.bounds
+        let scale = UIScreen.main.scale
+        let batteryLevel = UIDevice.current.batteryLevel
+        let batteryState = UIDevice.current.batteryState
+        let memoryGB = Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824.0
+        let machine = currentMachine()
+
+        let batteryText: String
+        switch batteryState {
+        case .charging: batteryText = "充电中"
+        case .full:     batteryText = "已充满"
+        case .unplugged:
+            batteryText = batteryLevel >= 0 ? "未充电" : "未知"
+        default:        batteryText = "未知"
+        }
+        let batteryPercent = batteryLevel >= 0 ? "\(Int(batteryLevel * 100))%" : "--"
+
+        let rows: [(String, String)] = [
+            ("型号", "\(model) (\(machine))"),
+            ("系统", "iOS \(systemVersion)"),
+            ("屏幕", "\(Int(screen.width))×\(Int(screen.height)) @\(Int(scale))x"),
+            ("电量", "\(batteryPercent) (\(batteryText))"),
+            ("运行内存", String(format: "%.1f GB", memoryGB))
+        ]
+
+        for (key, value) in rows {
+            let row = makeInfoRow(key: key, value: value)
+            deviceStack.addArrangedSubview(row)
+        }
+    }
+
+    private func makeInfoRow(key: String, value: String) -> UIView {
+        let container = UIView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+
+        let k = UILabel()
+        k.text = key
+        k.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        k.textColor = UIColor.white.withAlphaComponent(0.65)
+        k.translatesAutoresizingMaskIntoConstraints = false
+
+        let v = UILabel()
+        v.text = value
+        v.font = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .medium)
+        v.textColor = .white
+        v.textAlignment = .right
+        v.lineBreakMode = .byTruncatingTail
+        v.adjustsFontSizeToFitWidth = true
+        v.minimumScaleFactor = 0.7
+        v.translatesAutoresizingMaskIntoConstraints = false
+
+        container.addSubview(k)
+        container.addSubview(v)
+        NSLayoutConstraint.activate([
+            k.topAnchor.constraint(equalTo: container.topAnchor),
+            k.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            k.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+
+            v.topAnchor.constraint(equalTo: container.topAnchor),
+            v.leadingAnchor.constraint(equalTo: k.trailingAnchor, constant: 12),
+            v.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            v.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+
+            container.heightAnchor.constraint(greaterThanOrEqualToConstant: 20)
+        ])
+        return container
+    }
+
+    private func currentMachine() -> String {
+        var systemInfo = utsname()
+        if uname(&systemInfo) == 0 {
+            let mirror = Mirror(reflecting: systemInfo.machine)
+            var identifier = ""
+            for child in mirror.children {
+                if let value = child.value as? Int8, value != 0 {
+                    identifier.append(Character(UnicodeScalar(UInt8(value))))
+                }
+            }
+            return identifier.isEmpty ? "unknown" : identifier
+        }
+        return "unknown"
+    }
+
+    // MARK: - Feature 3: Haptic counter
+
+    @objc private func handleTap() {
+        feedbackGenerator.impactOccurred()
+        count += 1
+        counterLabel.text = "\(count)"
+        UserDefaults.standard.set(count, forKey: "tapCount")
+    }
+
+    private func loadCount() {
+        count = UserDefaults.standard.integer(forKey: "tapCount")
+        counterLabel.text = "\(count)"
+    }
+
+    // MARK: - Version
 
     private func updateVersionLabel() {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"

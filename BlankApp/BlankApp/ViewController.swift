@@ -2,6 +2,66 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    // MARK: - Theme colors
+
+    private struct Theme {
+        static var primaryText: UIColor {
+            UIColor { trait in
+                trait.userInterfaceStyle == .dark
+                    ? .white
+                    : UIColor(red: 0.10, green: 0.10, blue: 0.12, alpha: 1.0)
+            }
+        }
+
+        static var secondaryText: UIColor {
+            UIColor { trait in
+                trait.userInterfaceStyle == .dark
+                    ? UIColor.white.withAlphaComponent(0.85)
+                    : UIColor.black.withAlphaComponent(0.65)
+            }
+        }
+
+        static var tertiaryText: UIColor {
+            UIColor { trait in
+                trait.userInterfaceStyle == .dark
+                    ? UIColor.white.withAlphaComponent(0.65)
+                    : UIColor.black.withAlphaComponent(0.50)
+            }
+        }
+
+        static var cardBackground: UIColor {
+            UIColor { trait in
+                trait.userInterfaceStyle == .dark
+                    ? UIColor.white.withAlphaComponent(0.12)
+                    : UIColor.black.withAlphaComponent(0.06)
+            }
+        }
+
+        static var cardBorder: UIColor {
+            UIColor { trait in
+                trait.userInterfaceStyle == .dark
+                    ? UIColor.white.withAlphaComponent(0.15)
+                    : UIColor.black.withAlphaComponent(0.10)
+            }
+        }
+
+        static var buttonBackground: UIColor {
+            UIColor { trait in
+                trait.userInterfaceStyle == .dark
+                    ? UIColor.white.withAlphaComponent(0.95)
+                    : UIColor(red: 0.35, green: 0.25, blue: 0.65, alpha: 1.0)
+            }
+        }
+
+        static var buttonForeground: UIColor {
+            UIColor { trait in
+                trait.userInterfaceStyle == .dark
+                    ? UIColor(red: 0.20, green: 0.13, blue: 0.45, alpha: 1.0)
+                    : .white
+            }
+        }
+    }
+
     // MARK: - Background
 
     private let gradientLayer = CAGradientLayer()
@@ -16,7 +76,7 @@ class ViewController: UIViewController {
         iv.layer.cornerRadius = 22
         iv.layer.masksToBounds = true
         iv.layer.borderWidth = 1
-        iv.layer.borderColor = UIColor.white.withAlphaComponent(0.25).cgColor
+        iv.layer.borderColor = Theme.cardBorder.cgColor
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
@@ -25,7 +85,7 @@ class ViewController: UIViewController {
         let l = UILabel()
         l.text = "BlankApp"
         l.font = UIFont.systemFont(ofSize: 28, weight: .bold)
-        l.textColor = .white
+        l.textColor = Theme.primaryText
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -35,18 +95,18 @@ class ViewController: UIViewController {
         let l = UILabel()
         l.text = "Built on GitHub Actions"
         l.font = UIFont.systemFont(ofSize: 13, weight: .medium)
-        l.textColor = UIColor.white.withAlphaComponent(0.75)
+        l.textColor = Theme.secondaryText
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
 
-    // MARK: - Clock (Feature 2)
+    // MARK: - Clock
 
     private let timeLabel: UILabel = {
         let l = UILabel()
         l.font = UIFont.monospacedDigitSystemFont(ofSize: 56, weight: .bold)
-        l.textColor = .white
+        l.textColor = Theme.primaryText
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -55,7 +115,7 @@ class ViewController: UIViewController {
     private let dateLabel: UILabel = {
         let l = UILabel()
         l.font = UIFont.systemFont(ofSize: 15, weight: .medium)
-        l.textColor = UIColor.white.withAlphaComponent(0.85)
+        l.textColor = Theme.secondaryText
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -64,13 +124,13 @@ class ViewController: UIViewController {
     private let greetingLabel: UILabel = {
         let l = UILabel()
         l.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-        l.textColor = .white
+        l.textColor = Theme.primaryText
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
 
-    // MARK: - Device info card (Feature 1)
+    // MARK: - Device info card
 
     private let deviceStack: UIStackView = {
         let s = UIStackView()
@@ -82,10 +142,10 @@ class ViewController: UIViewController {
 
     private let deviceCardView: UIView = {
         let v = UIView()
-        v.backgroundColor = UIColor.white.withAlphaComponent(0.12)
+        v.backgroundColor = Theme.cardBackground
         v.layer.cornerRadius = 16
         v.layer.borderWidth = 1
-        v.layer.borderColor = UIColor.white.withAlphaComponent(0.15).cgColor
+        v.layer.borderColor = Theme.cardBorder.cgColor
         v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
@@ -94,17 +154,17 @@ class ViewController: UIViewController {
         let l = UILabel()
         l.text = "设备信息"
         l.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
-        l.textColor = UIColor.white.withAlphaComponent(0.7)
+        l.textColor = Theme.tertiaryText
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
     }()
 
-    // MARK: - Counter (Feature 3)
+    // MARK: - Counter
 
     private let counterLabel: UILabel = {
         let l = UILabel()
         l.font = UIFont.monospacedDigitSystemFont(ofSize: 48, weight: .bold)
-        l.textColor = .white
+        l.textColor = Theme.primaryText
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -114,7 +174,7 @@ class ViewController: UIViewController {
         let l = UILabel()
         l.text = "点击按钮 +1,有触感反馈"
         l.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-        l.textColor = UIColor.white.withAlphaComponent(0.7)
+        l.textColor = Theme.tertiaryText
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -123,8 +183,8 @@ class ViewController: UIViewController {
     private lazy var tapButton: UIButton = {
         var config = UIButton.Configuration.filled()
         config.title = "+1"
-        config.baseBackgroundColor = UIColor.white.withAlphaComponent(0.95)
-        config.baseForegroundColor = UIColor(red: 0.20, green: 0.13, blue: 0.45, alpha: 1.0)
+        config.baseBackgroundColor = Theme.buttonBackground
+        config.baseForegroundColor = Theme.buttonForeground
         config.cornerStyle = .capsule
         config.buttonSize = .large
         let b = UIButton(configuration: config)
@@ -133,8 +193,19 @@ class ViewController: UIViewController {
         return b
     }()
 
+    private lazy var settingsButton: UIButton = {
+        var config = UIButton.Configuration.plain()
+        config.image = UIImage(systemName: "gearshape")
+        config.baseForegroundColor = Theme.primaryText
+        let b = UIButton(configuration: config)
+        b.translatesAutoresizingMaskIntoConstraints = false
+        b.addTarget(self, action: #selector(didTapSettings), for: .touchUpInside)
+        return b
+    }()
+
     private let feedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
     private var count: Int = 0
+    private var cards: [UIView] = []
 
     // MARK: - Layout containers
 
@@ -158,7 +229,7 @@ class ViewController: UIViewController {
     private let versionLabel: UILabel = {
         let l = UILabel()
         l.font = UIFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
-        l.textColor = UIColor.white.withAlphaComponent(0.5)
+        l.textColor = Theme.tertiaryText
         l.textAlignment = .center
         l.translatesAutoresizingMaskIntoConstraints = false
         return l
@@ -174,14 +245,27 @@ class ViewController: UIViewController {
         populateDeviceInfo()
         loadCount()
         updateVersionLabel()
+        applyAppearance()
 
         UIDevice.current.batteryMonitoringEnabled = true
-
         feedbackGenerator.prepare()
 
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.updateClock()
         }
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(themeDidChange),
+            name: ThemeManager.didChangeNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleReset),
+            name: Notification.Name("CounterDidResetNotification"),
+            object: nil
+        )
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -192,6 +276,7 @@ class ViewController: UIViewController {
 
     deinit {
         timer?.invalidate()
+        NotificationCenter.default.removeObserver(self)
     }
 
     override func viewDidLayoutSubviews() {
@@ -199,15 +284,20 @@ class ViewController: UIViewController {
         gradientLayer.frame = view.bounds
     }
 
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        applyAppearance()
+    }
+
     // MARK: - Setup
 
     private func setupBackground() {
         view.layer.addSublayer(gradientLayer)
-        applyGradientForCurrentHour()
     }
 
     private func setupLayout() {
         view.addSubview(scrollView)
+        view.addSubview(settingsButton)
         scrollView.addSubview(contentStack)
 
         let headerStack = UIStackView(arrangedSubviews: [iconImageView, titleLabel, subtitleLabel])
@@ -229,6 +319,8 @@ class ViewController: UIViewController {
 
         deviceCardView.addSubview(deviceTitleLabel)
         deviceCardView.addSubview(deviceStack)
+        cards.append(deviceCardView)
+
         NSLayoutConstraint.activate([
             deviceTitleLabel.topAnchor.constraint(equalTo: deviceCardView.topAnchor, constant: 14),
             deviceTitleLabel.leadingAnchor.constraint(equalTo: deviceCardView.leadingAnchor, constant: 16),
@@ -247,7 +339,6 @@ class ViewController: UIViewController {
             s.translatesAutoresizingMaskIntoConstraints = false
             return s
         }())
-        // 让按钮横向铺满
         tapButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
 
         contentStack.addArrangedSubview(headerStack)
@@ -263,6 +354,11 @@ class ViewController: UIViewController {
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
 
+            settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            settingsButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            settingsButton.widthAnchor.constraint(equalToConstant: 44),
+            settingsButton.heightAnchor.constraint(equalToConstant: 44),
+
             contentStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: margins.top),
             contentStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: margins.left),
             contentStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -margins.right),
@@ -276,10 +372,10 @@ class ViewController: UIViewController {
 
     private func makeCard(content: () -> UIView) -> UIView {
         let card = UIView()
-        card.backgroundColor = UIColor.white.withAlphaComponent(0.12)
+        card.backgroundColor = Theme.cardBackground
         card.layer.cornerRadius = 16
         card.layer.borderWidth = 1
-        card.layer.borderColor = UIColor.white.withAlphaComponent(0.15).cgColor
+        card.layer.borderColor = Theme.cardBorder.cgColor
         card.translatesAutoresizingMaskIntoConstraints = false
         let inner = content()
         card.addSubview(inner)
@@ -289,10 +385,42 @@ class ViewController: UIViewController {
             inner.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
             inner.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -16)
         ])
+        cards.append(card)
         return card
     }
 
-    // MARK: - Feature 2: Clock
+    // MARK: - Appearance
+
+    private func applyAppearance() {
+        gradientLayer.colors = gradientColorsForCurrentHour()
+        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
+        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
+
+        for card in cards {
+            card.backgroundColor = Theme.cardBackground
+            card.layer.borderColor = Theme.cardBorder.cgColor
+        }
+
+        iconImageView.layer.borderColor = Theme.cardBorder.cgColor
+        updateButtonAppearance()
+        updateSettingsButtonAppearance()
+    }
+
+    private func updateButtonAppearance() {
+        var config = tapButton.configuration ?? UIButton.Configuration.filled()
+        config.baseBackgroundColor = Theme.buttonBackground
+        config.baseForegroundColor = Theme.buttonForeground
+        tapButton.configuration = config
+    }
+
+    private func updateSettingsButtonAppearance() {
+        var config = settingsButton.configuration ?? UIButton.Configuration.plain()
+        config.image = UIImage(systemName: "gearshape")
+        config.baseForegroundColor = Theme.primaryText
+        settingsButton.configuration = config
+    }
+
+    // MARK: - Clock
 
     private func updateClock() {
         let now = Date()
@@ -308,7 +436,7 @@ class ViewController: UIViewController {
         let hour = Calendar.current.component(.hour, from: now)
         greetingLabel.text = greeting(for: hour)
 
-        applyGradientForCurrentHour()
+        applyAppearance()
     }
 
     private func greeting(for hour: Int) -> String {
@@ -321,29 +449,36 @@ class ViewController: UIViewController {
         }
     }
 
-    private func applyGradientForCurrentHour() {
+    private func gradientColorsForCurrentHour() -> [CGColor] {
         let hour = Calendar.current.component(.hour, from: Date())
-        let (c1, c2): (UIColor, UIColor)
+        let isDark = traitCollection.userInterfaceStyle == .dark
+        let c1, c2: UIColor
         switch hour {
-        case 5..<11:  // 早晨 - 蓝紫
-            c1 = UIColor(red: 0.18, green: 0.34, blue: 0.62, alpha: 1.0)
-            c2 = UIColor(red: 0.32, green: 0.18, blue: 0.55, alpha: 1.0)
-        case 11..<17: // 中午 - 蓝绿
-            c1 = UIColor(red: 0.13, green: 0.30, blue: 0.55, alpha: 1.0)
-            c2 = UIColor(red: 0.15, green: 0.40, blue: 0.55, alpha: 1.0)
-        case 17..<20: // 黄昏 - 橙紫
-            c1 = UIColor(red: 0.42, green: 0.18, blue: 0.42, alpha: 1.0)
-            c2 = UIColor(red: 0.55, green: 0.25, blue: 0.30, alpha: 1.0)
-        default:      // 夜晚 - 深紫
-            c1 = UIColor(red: 0.08, green: 0.08, blue: 0.22, alpha: 1.0)
-            c2 = UIColor(red: 0.20, green: 0.10, blue: 0.40, alpha: 1.0)
+        case 5..<11:
+            c1 = isDark ? UIColor(red: 0.18, green: 0.34, blue: 0.62, alpha: 1.0)
+                        : UIColor(red: 0.55, green: 0.70, blue: 0.95, alpha: 1.0)
+            c2 = isDark ? UIColor(red: 0.32, green: 0.18, blue: 0.55, alpha: 1.0)
+                        : UIColor(red: 0.72, green: 0.60, blue: 0.90, alpha: 1.0)
+        case 11..<17:
+            c1 = isDark ? UIColor(red: 0.13, green: 0.30, blue: 0.55, alpha: 1.0)
+                        : UIColor(red: 0.50, green: 0.75, blue: 0.90, alpha: 1.0)
+            c2 = isDark ? UIColor(red: 0.15, green: 0.40, blue: 0.55, alpha: 1.0)
+                        : UIColor(red: 0.55, green: 0.80, blue: 0.75, alpha: 1.0)
+        case 17..<20:
+            c1 = isDark ? UIColor(red: 0.42, green: 0.18, blue: 0.42, alpha: 1.0)
+                        : UIColor(red: 0.90, green: 0.55, blue: 0.55, alpha: 1.0)
+            c2 = isDark ? UIColor(red: 0.55, green: 0.25, blue: 0.30, alpha: 1.0)
+                        : UIColor(red: 0.95, green: 0.70, blue: 0.50, alpha: 1.0)
+        default:
+            c1 = isDark ? UIColor(red: 0.08, green: 0.08, blue: 0.22, alpha: 1.0)
+                        : UIColor(red: 0.20, green: 0.25, blue: 0.45, alpha: 1.0)
+            c2 = isDark ? UIColor(red: 0.20, green: 0.10, blue: 0.40, alpha: 1.0)
+                        : UIColor(red: 0.45, green: 0.35, blue: 0.70, alpha: 1.0)
         }
-        gradientLayer.colors = [c1.cgColor, c2.cgColor]
-        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
-        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
+        return [c1.cgColor, c2.cgColor]
     }
 
-    // MARK: - Feature 1: Device info
+    // MARK: - Device info
 
     private func populateDeviceInfo() {
         deviceStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
@@ -388,13 +523,13 @@ class ViewController: UIViewController {
         let k = UILabel()
         k.text = key
         k.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-        k.textColor = UIColor.white.withAlphaComponent(0.65)
+        k.textColor = Theme.tertiaryText
         k.translatesAutoresizingMaskIntoConstraints = false
 
         let v = UILabel()
         v.text = value
         v.font = UIFont.monospacedDigitSystemFont(ofSize: 14, weight: .medium)
-        v.textColor = .white
+        v.textColor = Theme.primaryText
         v.textAlignment = .right
         v.lineBreakMode = .byTruncatingTail
         v.adjustsFontSizeToFitWidth = true
@@ -433,7 +568,7 @@ class ViewController: UIViewController {
         return "unknown"
     }
 
-    // MARK: - Feature 3: Haptic counter
+    // MARK: - Counter
 
     @objc private func handleTap() {
         feedbackGenerator.impactOccurred()
@@ -442,9 +577,27 @@ class ViewController: UIViewController {
         UserDefaults.standard.set(count, forKey: "tapCount")
     }
 
+    @objc private func handleReset() {
+        count = 0
+        counterLabel.text = "0"
+    }
+
     private func loadCount() {
         count = UserDefaults.standard.integer(forKey: "tapCount")
         counterLabel.text = "\(count)"
+    }
+
+    // MARK: - Settings
+
+    @objc private func didTapSettings() {
+        let settingsVC = SettingsViewController()
+        let nav = UINavigationController(rootViewController: settingsVC)
+        nav.modalPresentationStyle = .formSheet
+        present(nav, animated: true)
+    }
+
+    @objc private func themeDidChange() {
+        applyAppearance()
     }
 
     // MARK: - Version

@@ -11,6 +11,8 @@
 		AA0000000000000000000012 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000022 /* SceneDelegate.swift */; };
 		AA0000000000000000000013 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000023 /* ViewController.swift */; };
 		AA0000000000000000000014 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000025 /* Assets.xcassets */; };
+		AA0000000000000000000081 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000091 /* ThemeManager.swift */; };
+		AA0000000000000000000082 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000092 /* SettingsViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +21,8 @@
 		AA0000000000000000000023 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		AA0000000000000000000024 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0000000000000000000025 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA0000000000000000000091 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
+		AA0000000000000000000092 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		AA0000000000000000000026 /* BlankApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BlankApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -47,6 +51,8 @@
 				AA0000000000000000000021 /* AppDelegate.swift */,
 				AA0000000000000000000022 /* SceneDelegate.swift */,
 				AA0000000000000000000023 /* ViewController.swift */,
+				AA0000000000000000000091 /* ThemeManager.swift */,
+				AA0000000000000000000092 /* SettingsViewController.swift */,
 				AA0000000000000000000025 /* Assets.xcassets */,
 				AA0000000000000000000024 /* Info.plist */,
 			);
@@ -123,6 +129,8 @@
 				AA0000000000000000000011 /* AppDelegate.swift in Sources */,
 				AA0000000000000000000012 /* SceneDelegate.swift in Sources */,
 				AA0000000000000000000013 /* ViewController.swift in Sources */,
+				AA0000000000000000000081 /* ThemeManager.swift in Sources */,
+				AA0000000000000000000082 /* SettingsViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

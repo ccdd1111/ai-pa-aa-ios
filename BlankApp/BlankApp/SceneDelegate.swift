@@ -14,5 +14,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = ViewController()
         window.makeKeyAndVisible()
         self.window = window
+        ThemeManager.shared.applySavedTheme()
+    }
+
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        ThemeManager.shared.applySavedTheme()
     }
 }

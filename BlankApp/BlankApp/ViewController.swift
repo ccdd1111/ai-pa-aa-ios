@@ -6,13 +6,30 @@ class ViewController: UIViewController {
 
     private let gradientLayer = CAGradientLayer()
     private var timer: Timer?
+    private var lastGradientHour: Int = -1
+    private var isTimerActive: Bool = false
+
+    // MARK: - Cached formatters (DateFormatter is expensive to create)
+
+    private let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm:ss"
+        return f
+    }()
+
+    private let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "zh_CN")
+        f.dateFormat = "M月d日 EEEE"
+        return f
+    }()
 
     // MARK: - Header
 
     private let iconImageView: UIImageView = {
         let iv = UIImageView()
         iv.image = UIImage(named: "Logo")
-        iv.contentMode = .scaleAspectFill
+        iv.contentMode = .scaleAspectFit
         iv.layer.cornerRadius = 22
         iv.layer.masksToBounds = true
         iv.layer.borderWidth = 1
@@ -99,6 +116,13 @@ class ViewController: UIViewController {
         return l
     }()
 
+    // Cached static device info (machine identifier never changes at runtime)
+    private lazy var machineIdentifier: String = currentMachine()
+
+    // Reference to the battery value label so it can be refreshed without rebuilding the whole stack
+    private var batteryValueLabel: UILabel?
+    private var hasBuiltDeviceInfo: Bool = false
+
     // MARK: - Counter (Feature 3)
 
     private let counterLabel: UILabel = {
@@ -168,6 +192,10 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Enable battery monitoring BEFORE populating device info, otherwise the
+        // first render reports batteryState=.unknown / batteryLevel=-1.0.
+        UIDevice.current.batteryMonitoringEnabled = true
+
         setupBackground()
         setupLayout()
         updateClock()
@@ -175,22 +203,25 @@ class ViewController: UIViewController {
         loadCount()
         updateVersionLabel()
 
-        UIDevice.current.batteryMonitoringEnabled = true
-
         feedbackGenerator.prepare()
 
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.updateClock()
-        }
+        startTimer()
+
+        let nc = NotificationCenter.default
+        nc.addObserver(self, selector: #selector(handleAppWillResignActive),
+                       name: UIApplication.willResignActiveNotification, object: nil)
+        nc.addObserver(self, selector: #selector(handleAppDidBecomeActive),
+                       name: UIApplication.didBecomeActiveNotification, object: nil)
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         updateClock()
-        populateDeviceInfo()
+        refreshBatteryInfo()
     }
 
     deinit {
+        NotificationCenter.default.removeObserver(self)
         timer?.invalidate()
     }
 
@@ -296,19 +327,13 @@ class ViewController: UIViewController {
 
     private func updateClock() {
         let now = Date()
-        let timeFmt = DateFormatter()
-        timeFmt.dateFormat = "HH:mm:ss"
-        timeLabel.text = timeFmt.string(from: now)
-
-        let dateFmt = DateFormatter()
-        dateFmt.locale = Locale(identifier: "zh_CN")
-        dateFmt.dateFormat = "M月d日 EEEE"
-        dateLabel.text = dateFmt.string(from: now)
+        timeLabel.text = timeFormatter.string(from: now)
+        dateLabel.text = dateFormatter.string(from: now)
 
         let hour = Calendar.current.component(.hour, from: now)
         greetingLabel.text = greeting(for: hour)
 
-        applyGradientForCurrentHour()
+        applyGradientForCurrentHour(hour: hour)
     }
 
     private func greeting(for hour: Int) -> String {
@@ -321,10 +346,14 @@ class ViewController: UIViewController {
         }
     }
 
-    private func applyGradientForCurrentHour() {
-        let hour = Calendar.current.component(.hour, from: Date())
+    private func applyGradientForCurrentHour(hour: Int? = nil) {
+        let h = hour ?? Calendar.current.component(.hour, from: Date())
+        // The gradient only depends on the hour, so skip the work when it hasn't changed.
+        guard h != lastGradientHour else { return }
+        lastGradientHour = h
+
         let (c1, c2): (UIColor, UIColor)
-        switch hour {
+        switch h {
         case 5..<11:  // 早晨 - 蓝紫
             c1 = UIColor(red: 0.18, green: 0.34, blue: 0.62, alpha: 1.0)
             c2 = UIColor(red: 0.32, green: 0.18, blue: 0.55, alpha: 1.0)
@@ -343,19 +372,85 @@ class ViewController: UIViewController {
         gradientLayer.endPoint = CGPoint(x: 1, y: 1)
     }
 
+    // MARK: - Timer lifecycle
+
+    private func startTimer() {
+        guard timer == nil, !isTimerActive else { return }
+        // Create the timer unscheduled and add it to .common so it keeps firing
+        // while the scroll view is being tracked (default mode pauses for tracking).
+        let t = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.updateClock()
+        }
+        RunLoop.main.add(t, forMode: .common)
+        timer = t
+        isTimerActive = true
+    }
+
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+        isTimerActive = false
+    }
+
+    @objc private func handleAppWillResignActive() {
+        stopTimer()
+    }
+
+    @objc private func handleAppDidBecomeActive() {
+        // Refresh immediately so the clock isn't stale after returning from background.
+        updateClock()
+        refreshBatteryInfo()
+        startTimer()
+    }
+
     // MARK: - Feature 1: Device info
 
     private func populateDeviceInfo() {
+        // Static device info is built once; battery is refreshed separately via refreshBatteryInfo().
+        guard !hasBuiltDeviceInfo else {
+            refreshBatteryInfo()
+            return
+        }
         deviceStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
         let model = UIDevice.current.model
         let systemVersion = UIDevice.current.systemVersion
         let screen = UIScreen.main.bounds
         let scale = UIScreen.main.scale
+        let memoryGB = Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824.0
+        let machine = machineIdentifier
+
+        let rows: [(String, String)] = [
+            ("型号", "\(model) (\(machine))"),
+            ("系统", "iOS \(systemVersion)"),
+            ("屏幕", "\(Int(screen.width))×\(Int(screen.height)) @\(Int(scale))x"),
+            ("运行内存", String(format: "%.1f GB", memoryGB))
+        ]
+
+        for (key, value) in rows {
+            let row = makeInfoRow(key: key, value: value)
+            deviceStack.addArrangedSubview(row)
+        }
+
+        // Battery row is appended last and its value label stored for live updates.
+        let batteryRow = makeInfoRow(key: "电量", value: batteryDisplayString())
+        batteryValueLabel = batteryRow.subviews.compactMap { $0 as? UILabel }.first { $0.textAlignment == .right }
+        deviceStack.addArrangedSubview(batteryRow)
+
+        hasBuiltDeviceInfo = true
+    }
+
+    private func refreshBatteryInfo() {
+        guard hasBuiltDeviceInfo else {
+            populateDeviceInfo()
+            return
+        }
+        batteryValueLabel?.text = batteryDisplayString()
+    }
+
+    private func batteryDisplayString() -> String {
         let batteryLevel = UIDevice.current.batteryLevel
         let batteryState = UIDevice.current.batteryState
-        let memoryGB = Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824.0
-        let machine = currentMachine()
 
         let batteryText: String
         switch batteryState {
@@ -366,19 +461,7 @@ class ViewController: UIViewController {
         default:        batteryText = "未知"
         }
         let batteryPercent = batteryLevel >= 0 ? "\(Int(batteryLevel * 100))%" : "--"
-
-        let rows: [(String, String)] = [
-            ("型号", "\(model) (\(machine))"),
-            ("系统", "iOS \(systemVersion)"),
-            ("屏幕", "\(Int(screen.width))×\(Int(screen.height)) @\(Int(scale))x"),
-            ("电量", "\(batteryPercent) (\(batteryText))"),
-            ("运行内存", String(format: "%.1f GB", memoryGB))
-        ]
-
-        for (key, value) in rows {
-            let row = makeInfoRow(key: key, value: value)
-            deviceStack.addArrangedSubview(row)
-        }
+        return "\(batteryPercent) (\(batteryText))"
     }
 
     private func makeInfoRow(key: String, value: String) -> UIView {
